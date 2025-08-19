@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load static %}   {# Needed for {% static %} tag #}
+
+{% block title %}Home — Premium Jewel Pack{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-lg-8">
+    {% if GLOBAL_SLIDER_IMAGES %}
+      <div id="heroCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          {% for s in GLOBAL_SLIDER_IMAGES %}
+          <div class="carousel-item {% if forloop.first %}active{% endif %}">
+            <img src="{% static s %}" class="d-block w-100" style="height:420px;object-fit:cover;" alt="Slide">
+            <div class="carousel-caption d-none d-md-block">
+              <h3 class="fw-bold" style="color:#fff">Premium packaging for jewellery</h3>
+              <p>Beautiful, protective, and custom packaging.</p>
+              <a class="btn btn-pjp" href="{% url 'core:product_list' %}">Shop Now</a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon"></span>
+        </button>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="col-lg-4">
+    {% if request.user.is_authenticated %}
+      <div class="card card-pjp p-3">
+        <h5 class="mb-2">Welcome, {{ request.user.username }}!</h5>
+        <ul class="list-unstyled">
+          <li><a href="{% url 'core:product_list' %}">Browse products</a></li>
+          <li><a href="{% url 'core:cart_detail' %}">View cart ({{ CART_COUNT }})</a></li>
+          <li><a href="{% url 'core:my_orders' %}">My orders</a></li>
+        </ul>
+      </div>
+    {% else %}
+      <div class="card card-pjp p-4">
+        <h5 class="mb-3">Login to continue</h5>
+        <a class="btn btn-pjp w-100" href="{% url 'core:login' %}">Login</a>
+        <p class="mt-3 mb-0 small">Don’t have an account? <a href="{% url 'core:signup' %}">Sign up</a></p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<hr class="my-4">
+
+<h4 class="mb-3" style="color:var(--pjp-text-dark)">Latest Products</h4>
+<div class="row">
+  {% for product in products %}
+    <div class="col-md-3 mb-4">
+      <div class="card card-pjp">
+        {% if product.image %}
+          <img src="{{ product.image.url }}" class="card-img-top" style="height:190px;object-fit:cover;">
+        {% else %}
+          <img src="{% static 'images/placeholder.png' %}" class="card-img-top" style="height:190px;object-fit:cover;">
+        {% endif %}
+        <div class="card-body">
+          <h6 style="color:var(--pjp-text-dark)">{{ product.name }}</h6>
+          <p class="mb-1">₹{{ product.get_price }}</p>
+          <div class="d-flex gap-2">
+            <button class="btn btn-pjp add-to-cart" data-id="{{ product.id }}">Add to cart</button>
+            <a href="{{ product.get_absolute_url }}" class="btn btn-outline-secondary">View</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

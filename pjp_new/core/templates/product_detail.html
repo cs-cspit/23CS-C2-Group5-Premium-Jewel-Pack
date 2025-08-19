@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} — Product{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-md-6">
+    {% if product.image %}
+      <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
+    {% else %}
+      <img src="{% static 'images/placeholder.png' %}" class="img-fluid rounded" alt="{{ product.name }}">
+    {% endif %}
+  </div>
+  <div class="col-md-6">
+    <h2 style="color:var(--pjp-text-dark)">{{ product.name }}</h2>
+    <p class="h4">₹{{ product.get_price }}</p>
+    <p>{{ product.description|linebreaks }}</p>
+    <div class="mb-3">
+      <label>Quantity</label>
+      <input id="qty" type="number" value="1" min="1" class="form-control" style="width:120px;">
+    </div>
+    <button class="btn btn-pjp" id="btn-add" data-id="{{ product.id }}">Add to cart</button>
+  </div>
+</div>
+
+{% block scripts %}
+<script>
+document.getElementById('btn-add').addEventListener('click', function(){
+  const id = this.dataset.id;
+  const qty = document.getElementById('qty').value || 1;
+  fetch("{% url 'core:cart_add' %}", {
+    method:"POST",
+    headers: {"X-CSRFToken": csrftoken, "Content-Type":"application/x-www-form-urlencoded"},
+    body: new URLSearchParams({product_id: id, quantity: qty})
+  }).then(r=>r.json()).then(d=>{
+    if (d.success){
+      document.getElementById('cart-count').innerText = d.cart_count;
+      alert('Added to cart');
+    }
+  });
+});
+</script>
+{% endblock %}
+{% endblock %}
