@@ -1,0 +1,352 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{% if active_category %}{{ active_category.name }} — {% endif %}Products{% endblock %}
+{% block content %}
+<div class="row">
+  <aside class="col-lg-3 mb-3">
+    <div class="card card-pjp p-3 pjp-sidebar">
+      <h5>Categories</h5>
+      <ul class="list-unstyled mb-0">
+        <li class="mb-2"><a href="{% url 'core:product_list' %}" class="{% if not active_category %}fw-bold{% endif %}">All Products</a></li>
+        {% for c in GLOBAL_CATEGORIES %}
+          <li class="mb-2">
+            <a href="{% url 'core:product_list_by_category' c.slug %}" 
+               class="{% if active_category and c.slug == active_category.slug %}fw-bold{% endif %}">
+              {{ c.name }} <small class="text-muted">({{ c.product_set.count }})</small>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </aside>
+
+  <section class="col-lg-9">
+    {% if active_category %}
+      <h3 class="mb-3">{{ active_category.name }}</h3>
+    {% else %}
+      <h3 class="mb-3">All Products</h3>
+    {% endif %}
+
+    <form method="get" class="mb-3 d-flex gap-2">
+      <input name="q" value="{{ query }}" class="form-control" placeholder="Search products...">
+      <select name="sort" class="form-select" style="width:140px;">
+        <option value="new" {% if sort == 'new' %}selected{% endif %}>Newest</option>
+        <option value="az" {% if sort == 'az' %}selected{% endif %}>A → Z</option>
+        <option value="za" {% if sort == 'za' %}selected{% endif %}>Z → A</option>
+        <option value="price_low" {% if sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+        <option value="price_high" {% if sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+      </select>
+      <button class="btn btn-pjp">Search</button>
+    </form>
+
+    <div class="row">
+      <!-- Show sample products when no category is selected -->
+      {% if not active_category %}
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Bangles & Half set/banglesimg (1).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Fancy Bangle 1</h6>
+              <p class="mb-2">₹110</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="1">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Bangles & Half set/banglesimg (8).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Fancy Bangle 2</h6>
+              <p class="mb-2">₹130</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="2">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Carry bags/carrybagimg (5).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Carry Bag 1</h6>
+              <p class="mb-2">₹15</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="3">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Display toys/toysimg (3).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Display Toys 1</h6>
+              <p class="mb-2">₹900</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="4">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      {% elif active_category.slug == 'bangles-half-set' %}
+        <!-- Bangles & Half set products -->
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Bangles & Half set/banglesimg (1).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Bangles 1</h6>
+              <p class="mb-2">₹110</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="11">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Bangles & Half set/banglesimg (2).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Bangles 2</h6>
+              <p class="mb-2">₹130</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="12">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Bangles & Half set/banglesimg (3).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Bangles 3</h6>
+              <p class="mb-2">₹120</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="13">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Bangles & Half set/banglesimg (4).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Bangles 4</h6>
+              <p class="mb-2">₹140</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="14">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Bangles & Half set/banglesimg (5).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Bangles 5</h6>
+              <p class="mb-2">₹115</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="15">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Bangles & Half set/banglesimg (6).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Bangles 6</h6>
+              <p class="mb-2">₹125</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="16">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Bangles & Half set/banglesimg (7).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Bangles 7</h6>
+              <p class="mb-2">₹135</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="17">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Bangles & Half set/banglesimg (8).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Bangles 8</h6>
+              <p class="mb-2">₹145</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="18">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Bangles & Half set/banglesimg (9).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Bangles 9</h6>
+              <p class="mb-2">₹155</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="19">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Bangles & Half set/banglesimg (10).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Bangles 10</h6>
+              <p class="mb-2">₹165</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="20">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Bangles & Half set/banglesimg (11).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Bangles 11</h6>
+              <p class="mb-2">₹175</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="21">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Bangles & Half set/banglesimg (12).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Bangles 12</h6>
+              <p class="mb-2">₹185</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="22">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      {% elif active_category.slug == 'carry-bags' %}
+        <!-- Carry bags products -->
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Carry bags/carrybagimg (1).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Carry Bags 1</h6>
+              <p class="mb-2">₹15</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="31">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Carry bags/carrybagimg (2).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Carry Bags 2</h6>
+              <p class="mb-2">₹20</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="32">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Carry bags/carrybagimg (3).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Carry Bags 3</h6>
+              <p class="mb-2">₹18</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="33">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Carry bags/carrybagimg (4).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Carry Bags 4</h6>
+              <p class="mb-2">₹25</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="34">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Carry bags/carrybagimg (5).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Carry Bags 5</h6>
+              <p class="mb-2">₹22</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="35">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      {% elif active_category.slug == 'display-toys' %}
+        <!-- Display toys products -->
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Display toys/toysimg (1).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Display Toys 1</h6>
+              <p class="mb-2">₹900</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="41">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Display toys/toysimg (2).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Display Toys 2</h6>
+              <p class="mb-2">₹850</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="42">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-lg-3 mb-4">
+          <div class="card card-pjp h-100">
+            <img src="{% static 'images/Display toys/toysimg (3).jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h6 style="color:var(--pjp-text-dark)">Display Toys 3</h6>
+              <p class="mb-2">₹950</p>
+              <div class="d-flex gap-2 mt-auto">
+                <button class="btn btn-pjp add-to-cart" data-id="43">Add to cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      {% else %}
+        <div class="text-center py-5">
+          <p class="text-muted">Products for {{ active_category.name }} category will be displayed here.</p>
+          <a href="{% url 'core:product_list' %}" class="btn btn-outline-secondary">View All Products</a>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}

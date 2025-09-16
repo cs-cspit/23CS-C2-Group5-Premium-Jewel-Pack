@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% load static %}   {# Needed for {% static %} tag #}
+
+{% block title %}Home — Premium Jewel Pack{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-lg-8">
+    {% if GLOBAL_SLIDER_IMAGES %}
+      <div id="heroCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          {% for s in GLOBAL_SLIDER_IMAGES %}
+          <div class="carousel-item {% if forloop.first %}active{% endif %}">
+            <img src="{% static s %}" class="d-block w-100" style="height:420px;object-fit:cover;" alt="Slide">
+            <div class="carousel-caption d-none d-md-block">
+              <h3 class="fw-bold" style="color:#fff">Premium packaging for jewellery</h3>
+              <p>Beautiful, protective, and custom packaging.</p>
+              <a class="btn btn-pjp" href="{% url 'core:product_list' %}">Shop Now</a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon"></span>
+        </button>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="col-lg-4">
+    {% if request.user.is_authenticated %}
+      <div class="card card-pjp p-3">
+        <h5 class="mb-2">Welcome, {{ request.user.username }}!</h5>
+        <ul class="list-unstyled">
+          <li><a href="{% url 'core:product_list' %}">Browse products</a></li>
+          <li><a href="{% url 'core:cart_detail' %}">View cart ({{ CART_COUNT }})</a></li>
+          <li><a href="{% url 'core:my_orders' %}">My orders</a></li>
+        </ul>
+      </div>
+    {% else %}
+      <div class="card card-pjp p-4">
+        <h5 class="mb-3">Login to continue</h5>
+        <a class="btn btn-pjp w-100" href="{% url 'core:login' %}">Login</a>
+        <p class="mt-3 mb-0 small">Don’t have an account? <a href="{% url 'core:signup' %}">Sign up</a></p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<hr class="my-4">
+
+<h4 class="mb-3" style="color:var(--pjp-text-dark)">Latest Products</h4>
+<div class="row">
+  <!-- Product 1: Fancy Bangle 1 -->
+  <div class="col-md-3 mb-4">
+    <div class="card card-pjp">
+      <img src="{% static 'images/Bangles & Half set/banglesimg (1).jpg' %}" class="card-img-top" style="height:190px;object-fit:cover;">
+      <div class="card-body">
+        <h6 style="color:var(--pjp-text-dark)">Fancy Bangle 1</h6>
+        <p class="mb-1">₹110</p>
+        <div class="d-flex gap-2">
+          <button class="btn btn-pjp add-to-cart" data-id="1">Add to cart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product 2: Fancy Bangle 2 -->
+  <div class="col-md-3 mb-4">
+    <div class="card card-pjp">
+      <img src="{% static 'images/Bangles & Half set/banglesimg (8).jpg' %}" class="card-img-top" style="height:190px;object-fit:cover;">
+      <div class="card-body">
+        <h6 style="color:var(--pjp-text-dark)">Fancy Bangle 2</h6>
+        <p class="mb-1">₹130</p>
+        <div class="d-flex gap-2">
+          <button class="btn btn-pjp add-to-cart" data-id="2">Add to cart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product 3: Fancy Set 1 -->
+  <div class="col-md-3 mb-4">
+    <div class="card card-pjp">
+      <img src="{% static 'images/Bangles & Half set/banglesimg (10).jpg' %}" class="card-img-top" style="height:190px;object-fit:cover;">
+      <div class="card-body">
+        <h6 style="color:var(--pjp-text-dark)">Fancy Set 1</h6>
+        <p class="mb-1">₹280</p>
+        <div class="d-flex gap-2">
+          <button class="btn btn-pjp add-to-cart" data-id="3">Add to cart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product 4: Carry Bag 1 -->
+  <div class="col-md-3 mb-4">
+    <div class="card card-pjp">
+      <img src="{% static 'images/Carry bags/carrybagimg (5).jpg' %}" class="card-img-top" style="height:190px;object-fit:cover;">
+      <div class="card-body">
+        <h6 style="color:var(--pjp-text-dark)">Carry Bag 1</h6>
+        <p class="mb-1">₹15</p>
+        <div class="d-flex gap-2">
+          <button class="btn btn-pjp add-to-cart" data-id="4">Add to cart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product 5: Display Toys 1 -->
+  <div class="col-md-3 mb-4">
+    <div class="card card-pjp">
+      <img src="{% static 'images/Display toys/toysimg (3).jpg' %}" class="card-img-top" style="height:190px;object-fit:cover;">
+      <div class="card-body">
+        <h6 style="color:var(--pjp-text-dark)">Display Toys 1</h6>
+        <p class="mb-1">₹900</p>
+        <div class="d-flex gap-2">
+          <button class="btn btn-pjp add-to-cart" data-id="5">Add to cart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product 6: Display Toys 2 -->
+  <div class="col-md-3 mb-4">
+    <div class="card card-pjp">
+      <img src="{% static 'images/Display toys/toysimg (15).jpg' %}" class="card-img-top" style="height:190px;object-fit:cover;">
+      <div class="card-body">
+        <h6 style="color:var(--pjp-text-dark)">Display Toys 2</h6>
+        <p class="mb-1">₹1500</p>
+        <div class="d-flex gap-2">
+          <button class="btn btn-pjp add-to-cart" data-id="6">Add to cart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product 7: Fancy Purse set 1 -->
+  <div class="col-md-3 mb-4">
+    <div class="card card-pjp">
+      <img src="{% static 'images/Fancy Purse set 1×3/fancypurseimg (1).jpg' %}" class="card-img-top" style="height:190px;object-fit:cover;">
+      <div class="card-body">
+        <h6 style="color:var(--pjp-text-dark)">Fancy Purse set 1</h6>
+        <p class="mb-1">₹68</p>
+        <div class="d-flex gap-2">
+          <button class="btn btn-pjp add-to-cart" data-id="7">Add to cart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product 8: Wall clock -->
+  <div class="col-md-3 mb-4">
+    <div class="card card-pjp">
+      <img src="{% static 'images/Wall clock/clockimg (15).jpg' %}" class="card-img-top" style="height:190px;object-fit:cover;">
+      <div class="card-body">
+        <h6 style="color:var(--pjp-text-dark)">Wall clock</h6>
+        <p class="mb-1">₹175</p>
+        <div class="d-flex gap-2">
+          <button class="btn btn-pjp add-to-cart" data-id="8">Add to cart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
