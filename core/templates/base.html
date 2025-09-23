@@ -36,6 +36,14 @@
       <div class="collapse navbar-collapse" id="nav">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item"><a class="nav-link" href="{% url 'core:product_list' %}">Products</a></li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Categories</a>
+            <ul class="dropdown-menu">
+              {% for c in GLOBAL_CATEGORIES %}
+                <li><a class="dropdown-item" href="{% url 'core:product_list_by_category' c.slug %}">{{ c.name }} <small class="text-muted">({{ c.count }})</small></a></li>
+              {% endfor %}
+            </ul>
+          </li>
 
           {% if request.user.is_authenticated %}
             <li class="nav-item"><a class="nav-link" href="{% url 'core:my_orders' %}">My Orders</a></li>
@@ -53,8 +61,6 @@
               Cart <span class="badge rounded-pill" id="cart-count">{{ CART_COUNT }}</span>
             </a>
           </li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'core:about' %}">About</a></li>
-          <li class="nav-item"><a class="nav-link" href="{% url 'core:contact' %}">Contact</a></li>
         </ul>
       </div>
     </div>

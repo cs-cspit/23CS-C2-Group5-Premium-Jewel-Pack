@@ -12,7 +12,7 @@
           <li class="mb-2">
             <a href="{% url 'core:product_list_by_category' c.slug %}" 
                class="{% if active_category and c.slug == active_category.slug %}fw-bold{% endif %}">
-              {{ c.name }}
+              {{ c.name }} <small class="text-muted">({{ c.product_set.count }})</small>
             </a>
           </li>
         {% endfor %}
