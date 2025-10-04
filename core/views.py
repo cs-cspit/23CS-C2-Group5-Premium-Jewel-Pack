@@ -14,7 +14,7 @@ from .models import (
     Category, Product, Cart, CartItem,
     Order, OrderItem, OrderStatusHistory, Address
 )
-from .forms import SignupForm, LoginForm, CheckoutForm, AddressForm
+from .forms import SignupForm, LoginForm, CheckoutForm, AddressForm, ProductForm
 
 # -----------------------
 # Helpers
@@ -71,17 +71,20 @@ def _seed_db_from_static_once():
 # Pages
 # -----------------------
 def home(request):
-    # Fetch latest products to display on home page
-    products = Product.objects.all()[:8]  # Get first 8 products
+    # Fetch data for the new beautiful homepage
+    featured_products = Product.objects.filter(is_active=True)[:8]  # Get 8 featured products
+    product_count = Product.objects.filter(is_active=True).count()
+    category_count = Category.objects.count()
     
     context = {
-        'products': products,
-        # ...any other existing context variables...
+        'featured_products': featured_products,
+        'product_count': product_count,
+        'category_count': category_count,
     }
     return render(request, 'home.html', context)
 
 def product_list(request, slug=None):
-    _seed_db_from_static_once()
+    # _seed_db_from_static_once()
     qs = Product.objects.filter(is_active=True)
     active_category = None
     if slug:
@@ -142,6 +145,8 @@ def login_view(request):
             user = form.get_user()
             login(request, user)
             messages.success(request, f"Welcome back, {user.username}!")
+            if user.is_staff:
+                return redirect("core:owner_product_list")
             return redirect("core:home")
         else:
             messages.error(request, "Invalid credentials.")
@@ -301,6 +306,45 @@ def owner_update_order_status(request, order_id):
     OrderStatusHistory.objects.create(order=order, old_status=old_status, new_status=new_status, note=note)
     messages.success(request, f"Order #{order.id} status updated to {order.get_status_display()}.")
     return redirect("core:owner_orders")
+
+@user_passes_test(_owner_check)
+def owner_product_list(request):
+    products = Product.objects.all().order_by("-created_at")
+    return render(request, "owner_product_list.html", {"products": products})
+
+@user_passes_test(_owner_check)
+def owner_product_create(request):
+    if request.method == "POST":
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Product created successfully.")
+            return redirect("core:owner_product_list")
+    else:
+        form = ProductForm()
+    return render(request, "owner_product_form.html", {"form": form})
+
+@user_passes_test(_owner_check)
+def owner_product_update(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == "POST":
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Product updated successfully.")
+            return redirect("core:owner_product_list")
+    else:
+        form = ProductForm(instance=product)
+    return render(request, "owner_product_form.html", {"form": form})
+
+@user_passes_test(_owner_check)
+def owner_product_delete(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == "POST":
+        product.delete()
+        messages.success(request, "Product deleted successfully.")
+        return redirect("core:owner_product_list")
+    return render(request, "owner_product_delete.html", {"product": product})
 
 # -----------------------
 # Info

@@ -1,6 +1,159 @@
 {% extends "base.html" %}
-{% block title %}About — Premium Jewel Pack{% endblock %}
+{% load static %}
+{% block title %}About Us — Premium Jewel Pack{% endblock %}
 {% block content %}
-<h3 style="color:var(--pjp-text-dark)">About Us</h3>
-<p>Premium Jewel Pack — quality jewellery packaging made in India.</p>
+<div class="row">
+  <div class="col-lg-8 mx-auto">
+    <!-- Hero Section -->
+    <div class="text-center mb-5">
+      <h1 class="display-4 fw-bold" style="color:var(--pjp-primary)">About Premium Jewel Pack</h1>
+      <p class="lead text-muted">Crafting Excellence in Jewelry Packaging Since 2018</p>
+    </div>
+
+    <!-- Story Section -->
+    <div class="row mb-5">
+      <div class="col-md-6">
+        <h3 style="color:var(--pjp-text-dark)" class="mb-3">Our Story</h3>
+        <p>Premium Jewel Pack was born from a simple vision: to provide jewelry retailers and manufacturers with packaging solutions that match the beauty and value of their precious creations.</p>
+        <p>What started as a small family business in Gujarat has grown into a trusted name across India, serving everyone from local artisans to established jewelry houses.</p>
+        <p>Every product in our collection is carefully designed to enhance the presentation of jewelry while ensuring maximum protection during storage and transport.</p>
+      </div>
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="row">
+              <div class="col-6 border-end">
+                <h4 class="fw-bold" style="color:var(--pjp-primary)">500+</h4>
+                <p class="mb-0 text-muted">Happy Clients</p>
+              </div>
+              <div class="col-6">
+                <h4 class="fw-bold" style="color:var(--pjp-primary)">50,000+</h4>
+                <p class="mb-0 text-muted">Products Sold</p>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-6 border-end">
+                <h4 class="fw-bold" style="color:var(--pjp-primary)">20+</h4>
+                <p class="mb-0 text-muted">Years Experience</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Categories -->
+    <div class="mb-5">
+      <h3 style="color:var(--pjp-text-dark)" class="mb-4 text-center">What We Offer</h3>
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center">
+              <div class="mb-3">
+                <i class="fas fa-gem fa-3x" style="color:var(--pjp-primary)"></i>
+              </div>
+              <h5>Jewelry Boxes</h5>
+              <p class="text-muted">Elegant boxes for bangles, rings, and precious jewelry sets with premium finishes.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center">
+              <div class="mb-3">
+                <i class="fas fa-shopping-bag fa-3x" style="color:var(--pjp-primary)"></i>
+              </div>
+              <h5>Carry Bags</h5>
+              <p class="text-muted">Stylish and durable carry bags that enhance your brand's professional image.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center">
+              <div class="mb-3">
+                <i class="fas fa-clock fa-3x" style="color:var(--pjp-primary)"></i>
+              </div>
+              <h5>Display Items</h5>
+              <p class="text-muted">Eye-catching display accessories including decorative clocks and presentation stands.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Values Section -->
+    <div class="mb-5">
+      <h3 style="color:var(--pjp-text-dark)" class="mb-4 text-center">Our Values</h3>
+      <div class="row g-4">
+        <div class="col-md-6">
+          <div class="d-flex">
+            <div class="me-3">
+              <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                   style="width:50px;height:50px;background-color:var(--pjp-primary)">
+                <i class="fas fa-star text-white"></i>
+              </div>
+            </div>
+            <div>
+              <h5>Quality First</h5>
+              <p class="text-muted">Every product undergoes strict quality checks to ensure it meets our high standards.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="d-flex">
+            <div class="me-3">
+              <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                   style="width:50px;height:50px;background-color:var(--pjp-primary)">
+                <i class="fas fa-shipping-fast text-white"></i>
+              </div>
+            </div>
+            <div>
+              <h5>Fast Delivery</h5>
+              <p class="text-muted">Quick and reliable shipping across India with careful packaging to ensure safe arrival.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="d-flex">
+            <div class="me-3">
+              <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                   style="width:50px;height:50px;background-color:var(--pjp-primary)">
+                <i class="fas fa-rupee-sign text-white"></i>
+              </div>
+            </div>
+            <div>
+              <h5>Affordable Pricing</h5>
+              <p class="text-muted">Premium quality at competitive prices, making luxury packaging accessible to all.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="d-flex">
+            <div class="me-3">
+              <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                   style="width:50px;height:50px;background-color:var(--pjp-primary)">
+                <i class="fas fa-handshake text-white"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="text-center bg-light rounded p-5">
+      <h4 style="color:var(--pjp-text-dark)">Ready to Elevate Your Jewelry Presentation?</h4>
+      <p class="text-muted mb-4">Browse our extensive collection and find the perfect packaging solution for your needs.</p>
+      <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <a href="{% url 'core:product_list' %}" class="btn btn-pjp btn-lg">Shop Now</a>
+        <a href="{% url 'core:contact' %}" class="btn btn-outline-secondary btn-lg">Get in Touch</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 {% endblock %}

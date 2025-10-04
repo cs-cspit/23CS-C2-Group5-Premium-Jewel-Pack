@@ -34,6 +34,10 @@ urlpatterns = [
     # Owner management (requires is_staff check inside view)
     path("owner/orders/", views.owner_orders, name="owner_orders"),
     path("owner/order/<int:order_id>/status/", views.owner_update_order_status, name="owner_update_order_status"),
+    path('owner/products/', views.owner_product_list, name='owner_product_list'),
+    path('owner/products/create/', views.owner_product_create, name='owner_product_create'),
+    path('owner/products/update/<int:pk>/', views.owner_product_update, name='owner_product_update'),
+    path('owner/products/delete/<int:pk>/', views.owner_product_delete, name='owner_product_delete'),
 
     # Info
     path("about/", views.about, name="about"),

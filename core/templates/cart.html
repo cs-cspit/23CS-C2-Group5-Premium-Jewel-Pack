@@ -9,55 +9,25 @@
       {% for item in cart.items.all %}
       <tr>
         <td>
-          {% if item.product.id == products.0.id %}
-            Fancy Bangle 1
-          {% elif item.product.id == products.1.id %}
-            Fancy Bangle 2
-          {% elif item.product.id == products.2.id %}
-            Fancy Set 1
-          {% elif item.product.id == products.3.id %}
-            Carry Bag 1
-          {% elif item.product.id == products.4.id %}
-            Display Toys 1
-          {% elif item.product.id == products.5.id %}
-            Display Toys 2
-          {% elif item.product.id == products.6.id %}
-            Fancy Purse set 1
-          {% elif item.product.id == products.7.id %}
-            Wall clock
-          {% else %}
-            {{ item.product.name }}
-          {% endif %}
+          <div class="d-flex align-items-center">
+            {% if item.product.image %}
+              <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" style="width: 50px; height: 50px; object-fit: cover; margin-right: 10px;">
+            {% endif %}
+            <div>
+              <strong>{{ item.product.name }}</strong>
+              <br><small class="text-muted">{{ item.product.category.name }}</small>
+            </div>
+          </div>
         </td>
-        <td>
-          {% if item.product.id == products.0.id %}
-            ₹110
-          {% elif item.product.id == products.1.id %}
-            ₹130
-          {% elif item.product.id == products.2.id %}
-            ₹280
-          {% elif item.product.id == products.3.id %}
-            ₹15
-          {% elif item.product.id == products.4.id %}
-            ₹900
-          {% elif item.product.id == products.5.id %}
-            ₹1500
-          {% elif item.product.id == products.6.id %}
-            ₹68
-          {% elif item.product.id == products.7.id %}
-            ₹175
-          {% else %}
-            ₹{{ item.product.get_price }}
-          {% endif %}
-        </td>
-        <td><input class="form-control qty-input" data-id="{{ item.id }}" value="{{ item.quantity }}" style="width:80px;"></td>
-        <td class="item-sub">{{ item.subtotal|floatformat:2 }}</td>
+        <td>₹{{ item.product.get_price }}</td>
+        <td><input class="form-control qty-input" data-id="{{ item.id }}" value="{{ item.quantity }}" type="number" min="1" max="99" style="width:80px;"></td>
+        <td class="item-sub">₹{{ item.subtotal }}</td>
         <td><button class="btn btn-sm btn-outline-danger remove-item" data-id="{{ item.id }}">Remove</button></td>
       </tr>
       {% endfor %}
       <tr>
         <td colspan="3" class="text-end"><strong>Total</strong></td>
-        <td colspan="2"><strong>₹{{ cart.total|floatformat:2 }}</strong></td>
+        <td colspan="2"><strong>₹<span id="cart-total">{{ cart.total }}</span></strong></td>
       </tr>
     </tbody>
   </table>
@@ -70,4 +40,30 @@
   <p>Your cart is empty.</p>
   <a href="{% url 'core:product_list' %}" class="btn btn-outline-secondary">Continue Shopping</a>
 {% endif %}
+
+<script>
+// Function to calculate and update cart total from subtotals
+function updateCartTotal() {
+  let cartTotal = 0;
+  
+  // Get all subtotal cells and sum them up
+  document.querySelectorAll('.item-sub').forEach(function(cell) {
+    const subtotalText = cell.textContent.replace('₹', '').replace(',', '');
+    const subtotal = parseFloat(subtotalText) || 0;
+    cartTotal += subtotal;
+  });
+  
+  // Update the total display
+  const totalElement = document.getElementById('cart-total');
+  if (totalElement) {
+    totalElement.textContent = cartTotal.toFixed(2);
+  }
+}
+
+// Calculate initial total when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  updateCartTotal();
+});
+</script>
+
 {% endblock %}

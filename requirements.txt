@@ -15,6 +15,7 @@ django-cors-headers==4.7.0
 
 # django-crispy-forms (signup/login forms)
 django-crispy-forms==2.4
+crispy-bootstrap5
 
 # django-allauth (auth, social login)
 django-allauth==65.11.0
