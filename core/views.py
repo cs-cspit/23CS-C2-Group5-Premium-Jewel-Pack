@@ -158,10 +158,8 @@ def signup_view(request):
     form = SignupForm(request.POST or None)
     if request.method == "POST":
         if form.is_valid():
-            user = form.save(commit=False)
-            user.set_password(form.cleaned_data["password"])
-            user.save()
-            messages.success(request, "Account created. You are now logged in.")
+            user = form.save()  # The form's save method handles everything now
+            messages.success(request, "Account created successfully! You are now logged in.")
             login(request, user)
             return redirect("core:home")
         else:

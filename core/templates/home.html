@@ -96,7 +96,23 @@
         <div class="col-md-6 col-lg-4">
           <a href="{% url 'core:product_list_by_category' category.slug %}" class="category-card">
             <div class="category-image">
-              <img src="{% static 'images/Bangles & Half set/banglesimg (1).jpg' %}" alt="{{ category.name }}">
+              {% if category.name == "Bangles & Half set" %}
+                <img src="{% static 'images/Bangles & Half set/banglesimg (1).jpg' %}" alt="{{ category.name }}">
+              {% elif category.name == "Carry bags" %}
+                <img src="{% static 'images/Carry bags/carrybagimg (1).jpg' %}" alt="{{ category.name }}">
+              {% elif category.name == "Display toys" %}
+                <img src="{% static 'images/Display toys/toysimg (1).jpg' %}" alt="{{ category.name }}">
+              {% elif category.name == "Fancy carry bag" %}
+                <img src="{% static 'images/Fancy carry bag/fancybagimg (1).jpg' %}" alt="{{ category.name }}">
+              {% elif category.name == "Fancy Purse set 1×3" %}
+                <img src="{% static 'images/Fancy Purse set 1×3/fancypurseimg (1).jpg' %}" alt="{{ category.name }}">
+              {% elif category.name == "Purse" %}
+                <img src="{% static 'images/Purse/purseimg (1).jpg' %}" alt="{{ category.name }}">
+              {% elif category.name == "Wall clock" %}
+                <img src="{% static 'images/Wall clock/clockimg (1).jpg' %}" alt="{{ category.name }}">
+              {% else %}
+                <img src="{% static 'images/Bangles & Half set/banglesimg (1).jpg' %}" alt="{{ category.name }}">
+              {% endif %}
               <div class="category-overlay">
                 <h4>{{ category.name }}</h4>
                 <span class="category-arrow">→</span>

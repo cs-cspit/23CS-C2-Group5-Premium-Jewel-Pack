@@ -3,7 +3,7 @@
 from django.contrib import admin
 from .models import (
     Category, Product, Address, Cart, CartItem,
-    Order, OrderItem, OrderStatusHistory
+    Order, OrderItem, OrderStatusHistory, UserProfile
 )
 
 
@@ -69,3 +69,11 @@ class OrderAdmin(admin.ModelAdmin):
                 note="Marked shipped from admin action"
             )
     mark_shipped.short_description = "Mark selected orders as shipped"
+
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "firm_name", "mobile_number", "created_at")
+    search_fields = ("user__username", "user__first_name", "user__email", "firm_name", "mobile_number")
+    list_filter = ("created_at",)
+    readonly_fields = ("created_at", "updated_at")

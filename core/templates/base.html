@@ -46,9 +46,9 @@
               <li class="nav-item"><a class="nav-link" href="{% url 'core:my_orders' %}">My Orders</a></li>
             {% endif %}
             <li class="nav-item"><a class="nav-link" href="#">{{ request.user.username }}</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'core:logout' %}">Logout</a></li>
           {% else %}
             <li class="nav-item"><a class="nav-link" href="{% url 'core:login' %}">Login</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'core:signup' %}">Sign Up</a></li>
           {% endif %}
 
           {% if not request.user.is_staff %}
@@ -60,6 +60,10 @@
           {% endif %}
           <li class="nav-item"><a class="nav-link" href="{% url 'core:about' %}">About</a></li>
           <li class="nav-item"><a class="nav-link" href="{% url 'core:contact' %}">Contact</a></li>
+          
+          {% if request.user.is_authenticated %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'core:logout' %}">Logout</a></li>
+          {% endif %}
         </ul>
       </div>
     </div>

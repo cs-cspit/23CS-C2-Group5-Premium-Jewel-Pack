@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Order, Address, Product
+from django.contrib.auth.forms import UserCreationForm
+from .models import Order, Address, Product, UserProfile
 
 class ProductForm(forms.ModelForm):
     class Meta:
@@ -21,23 +22,96 @@ class LoginForm(forms.Form):
     username = forms.CharField(max_length=150, widget=forms.TextInput(attrs={"class": "form-control"}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={"class": "form-control"}))
 
-class SignupForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput(attrs={"class": "form-control"}))
-    confirm_password = forms.CharField(widget=forms.PasswordInput(attrs={"class": "form-control"}))
+class SignupForm(UserCreationForm):
+    # Custom fields for your business requirements
+    full_name = forms.CharField(
+        max_length=100, 
+        required=True,
+        label="Name",
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Enter your full name"})
+    )
+    firm_name = forms.CharField(
+        max_length=100, 
+        required=True,
+        label="Firm Name", 
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Enter your firm/company name"})
+    )
+    mobile_number = forms.CharField(
+        max_length=15, 
+        required=True,
+        label="Mobile Number",
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Enter your mobile number"})
+    )
+    address = forms.CharField(
+        required=True,
+        label="Address",
+        widget=forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Enter your complete address"})
+    )
+    email = forms.EmailField(
+        required=True, 
+        label="Email Address",
+        widget=forms.EmailInput(attrs={"class": "form-control", "placeholder": "Enter your email address"})
+    )
 
     class Meta:
         model = User
-        fields = ("username", "email")
+        fields = ("username", "email", "password1", "password2")
 
-    def clean(self):
-        cleaned = super().clean()
-        p1 = cleaned.get("password")
-        p2 = cleaned.get("confirm_password")
-        if p1 and p2 and p1 != p2:
-            raise forms.ValidationError("Passwords do not match.")
-        if User.objects.filter(username=cleaned.get("username")).exists():
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Customize the default fields
+        self.fields['username'].widget.attrs.update({
+            'class': 'form-control', 
+            'placeholder': 'Choose a username'
+        })
+        self.fields['password1'].widget.attrs.update({
+            'class': 'form-control', 
+            'placeholder': 'Enter password'
+        })
+        self.fields['password2'].widget.attrs.update({
+            'class': 'form-control', 
+            'placeholder': 'Confirm password'
+        })
+        
+        # Update labels
+        self.fields['password1'].label = "Password"
+        self.fields['password2'].label = "Confirm Password"
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data["email"]
+        user.first_name = self.cleaned_data["full_name"]
+        if commit:
+            user.save()
+            # Create UserProfile with additional information
+            UserProfile.objects.create(
+                user=user,
+                firm_name=self.cleaned_data["firm_name"],
+                mobile_number=self.cleaned_data["mobile_number"],
+                address=self.cleaned_data["address"]
+            )
+        return user
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['password1'].widget.attrs.update({'class': 'form-control'})
+        self.fields['password2'].widget.attrs.update({'class': 'form-control'})
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if User.objects.filter(username=username).exists():
             raise forms.ValidationError("Username already taken.")
-        return cleaned
+        return username
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data["email"]
+        if commit:
+            user.save()
+        return user
 
 class CheckoutForm(forms.ModelForm):
     class Meta:
