@@ -1,8 +1,9 @@
 from django.contrib.auth.signals import user_logged_in
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.contrib.auth.models import User
-from .models import Cart
+from django.utils import timezone
+from .models import Cart, Order, OrderTracking, OrderStatusHistory
 
 @receiver(user_logged_in)
 def merge_carts(sender, user, request, **kwargs):
@@ -30,3 +31,53 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created:
         # no profile model now; if you add, create here
         pass
+
+
+# Order tracking signals
+@receiver(post_save, sender=Order)
+def create_order_tracking(sender, instance, created, **kwargs):
+    """Create OrderTracking when Order is created"""
+    if created:
+        tracking = OrderTracking.objects.create(
+            order=instance,
+            placed_at=timezone.now(),
+            delivery_address=f"{instance.address}, {instance.city}, {instance.state} {instance.postal_code}"
+        )
+
+
+@receiver(pre_save, sender=Order)
+def track_order_status_change(sender, instance, **kwargs):
+    """Track order status changes and update timestamps"""
+    if instance.pk:  # Only for existing orders (updates)
+        try:
+            old_order = Order.objects.get(pk=instance.pk)
+            if old_order.status != instance.status:
+                # Status has changed, create history record
+                OrderStatusHistory.objects.create(
+                    order=instance,
+                    old_status=old_order.status,
+                    new_status=instance.status,
+                    note=f"Status changed from {old_order.get_status_display()} to {instance.get_status_display()}"
+                )
+                
+                # Update tracking timestamps
+                tracking, created = OrderTracking.objects.get_or_create(order=instance)
+                now = timezone.now()
+                
+                if instance.status == 'PLACED':
+                    tracking.placed_at = now
+                elif instance.status == 'IN_PROCESS':
+                    tracking.in_process_at = now
+                elif instance.status == 'DELIVERY_SOON':
+                    tracking.delivery_soon_at = now
+                elif instance.status == 'OUT_FOR_DELIVERY':
+                    tracking.out_for_delivery_at = now
+                elif instance.status == 'DELIVERED':
+                    tracking.delivered_at = now
+                elif instance.status == 'CANCELLED':
+                    tracking.cancelled_at = now
+                
+                tracking.save()
+        
+        except Order.DoesNotExist:
+            pass

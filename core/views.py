@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from datetime import datetime, timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -9,10 +10,11 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.utils.text import slugify
 from django.conf import settings
+from django.utils import timezone
 
 from .models import (
     Category, Product, Cart, CartItem,
-    Order, OrderItem, OrderStatusHistory, Address
+    Order, OrderItem, OrderStatusHistory, Address, OrderTracking
 )
 from .forms import SignupForm, LoginForm, CheckoutForm, AddressForm, ProductForm
 
@@ -269,13 +271,50 @@ def order_success(request, order_id):
 
 @login_required
 def my_orders(request):
-    orders = Order.objects.filter(user=request.user).order_by("-created_at")
-    return render(request, "orders.html", {"orders": orders})
+    # Default to orders from last 1 month
+    one_month_ago = timezone.now() - timedelta(days=30)
+    
+    # Get date filter from request (if provided)
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    
+    orders = Order.objects.filter(user=request.user)
+    
+    if start_date and end_date:
+        try:
+            start = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end = datetime.strptime(end_date, '%Y-%m-%d').date()
+            orders = orders.filter(created_at__date__gte=start, created_at__date__lte=end)
+        except ValueError:
+            # Invalid date format, use default
+            orders = orders.filter(created_at__gte=one_month_ago)
+    else:
+        # Default: last 1 month
+        orders = orders.filter(created_at__gte=one_month_ago)
+    
+    orders = orders.order_by("-created_at")
+    
+    context = {
+        'orders': orders,
+        'start_date': start_date or one_month_ago.strftime('%Y-%m-%d'),
+        'end_date': end_date or timezone.now().strftime('%Y-%m-%d'),
+    }
+    return render(request, "orders.html", context)
 
 @login_required
 def my_order_detail(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
-    return render(request, "order_detail.html", {"order": order})
+    # Get tracking information
+    tracking = OrderTracking.objects.filter(order=order).first()
+    # Get status history
+    history = OrderStatusHistory.objects.filter(order=order).order_by('-created_at')
+    
+    context = {
+        'order': order,
+        'tracking': tracking,
+        'history': history,
+    }
+    return render(request, "order_detail.html", context)
 
 # -----------------------
 # Owner pages
@@ -285,8 +324,45 @@ def _owner_check(user):
 
 @user_passes_test(_owner_check)
 def owner_orders(request):
-    orders = Order.objects.all().order_by("-created_at")
-    return render(request, "owner_orders.html", {"orders": orders})
+    # Get filter parameters
+    status_filter = request.GET.get('status', '')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    
+    orders = Order.objects.all()
+    
+    if status_filter:
+        orders = orders.filter(status=status_filter)
+    
+    if start_date and end_date:
+        try:
+            start = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end = datetime.strptime(end_date, '%Y-%m-%d').date()
+            orders = orders.filter(created_at__date__gte=start, created_at__date__lte=end)
+        except ValueError:
+            pass
+    
+    orders = orders.order_by("-created_at")
+    
+    # Status choices for filter dropdown
+    status_choices = [
+        ('', 'All Orders'),
+        ('PLACED', 'Order Placed'),
+        ('IN_PROCESS', 'Order in Process'),
+        ('DELIVERY_SOON', 'Delivery Soon'),
+        ('OUT_FOR_DELIVERY', 'Out for Delivery'),
+        ('DELIVERED', 'Delivered'),
+        ('CANCELLED', 'Cancelled'),
+    ]
+    
+    context = {
+        'orders': orders,
+        'status_choices': status_choices,
+        'current_status': status_filter,
+        'start_date': start_date,
+        'end_date': end_date,
+    }
+    return render(request, "owner_orders.html", context)
 
 @user_passes_test(_owner_check)
 def owner_update_order_status(request, order_id):
@@ -295,9 +371,30 @@ def owner_update_order_status(request, order_id):
     new_status = request.POST.get("status")
     note = request.POST.get("note", "")
     order = get_object_or_404(Order, id=order_id)
-    if new_status not in dict(order._meta.get_field("status").choices):
+    
+    # Valid status choices
+    valid_statuses = ['PLACED', 'IN_PROCESS', 'DELIVERY_SOON', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED']
+    
+    if new_status not in valid_statuses:
         messages.error(request, "Invalid status")
         return redirect("core:owner_orders")
+    
+    old_status = order.status
+    order.status = new_status
+    order.save()
+    
+    # Create manual history entry with note if provided
+    if note:
+        OrderStatusHistory.objects.create(
+            order=order,
+            old_status=old_status,
+            new_status=new_status,
+            note=note,
+            updated_by=request.user
+        )
+    
+    messages.success(request, f"Order #{order.id} status updated to {order.get_status_display()}")
+    return redirect("core:owner_orders")
     old_status = order.status
     order.status = new_status
     order.save()

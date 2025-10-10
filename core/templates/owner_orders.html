@@ -1,31 +1,178 @@
 {% extends "base.html" %}
-{% block title %}Manage Orders{% endblock %}
+{% block title %}Manage Orders - Premium Jewel Pack{% endblock %}
+
 {% block content %}
-<h3>Manage Orders</h3>
-<table class="table">
-  <thead><tr><th>ID</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th><th>Action</th></tr></thead>
-  <tbody>
-    {% for o in orders %}
-    <tr>
-      <td>#{{ o.id }}</td>
-      <td>{{ o.full_name }}<br><small>{{ o.email }}</small></td>
-      <td>{{ o.created_at|date:"d M Y H:i" }}</td>
-      <td>₹ {{ o.total }}</td>
-      <td><span class="badge bg-dark">{{ o.get_status_display }}</span></td>
-      <td>
-        <form action="{% url 'core:owner_update_order_status' o.id %}" method="post" class="d-flex gap-2">
-          {% csrf_token %}
-          <select name="status" class="form-select form-select-sm">
-            {% for key,label in o._meta.get_field('status').choices %}
-              <option value="{{ key }}" {% if o.status==key %}selected{% endif %}>{{ label }}</option>
+<div class="container py-4">
+  <h3>Manage Orders</h3>
+  
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <form method="get" class="row g-3 align-items-center">
+        <div class="col-md-2">
+          <label for="status" class="form-label">Status</label>
+          <select name="status" class="form-select">
+            {% for value, label in status_choices %}
+              <option value="{{ value }}" {% if value == current_status %}selected{% endif %}>{{ label }}</option>
             {% endfor %}
           </select>
-          <input name="note" class="form-control form-control-sm" placeholder="Note (optional)">
-          <button class="btn btn-pjp btn-sm">Update</button>
-        </form>
-      </td>
-    </tr>
+        </div>
+        <div class="col-md-3">
+          <label for="start_date" class="form-label">From Date</label>
+          <input type="date" class="form-control" name="start_date" value="{{ start_date }}">
+        </div>
+        <div class="col-md-3">
+          <label for="end_date" class="form-label">To Date</label>
+          <input type="date" class="form-control" name="end_date" value="{{ end_date }}">
+        </div>
+        <div class="col-md-2">
+          <label>&nbsp;</label>
+          <div>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-filter me-2"></i>Filter
+            </button>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <label>&nbsp;</label>
+          <div>
+            <a href="{% url 'core:owner_orders' %}" class="btn btn-outline-secondary">
+              <i class="fas fa-refresh me-2"></i>Reset
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% if orders %}
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-dark">
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Update Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for order in orders %}
+                <tr>
+                  <td>
+                    <strong>#{{ order.id }}</strong>
+                  </td>
+                  <td>
+                    <div>
+                      <strong>{{ order.full_name }}</strong><br>
+                      <small class="text-muted">{{ order.email }}</small>
+                    </div>
+                  </td>
+                  <td>
+                    <div>
+                      {{ order.created_at|date:"M d, Y" }}<br>
+                      <small class="text-muted">{{ order.created_at|date:"H:i" }}</small>
+                    </div>
+                  </td>
+                  <td>
+                    <strong>₹{{ order.total }}</strong>
+                  </td>
+                  <td>
+                    <span class="badge badge-status-{{ order.status|lower }}">{{ order.get_status_display }}</span>
+                  </td>
+                  <td>
+                    <form action="{% url 'core:owner_update_order_status' order.id %}" method="post" class="d-flex gap-2">
+                      {% csrf_token %}
+                      <select name="status" class="form-select form-select-sm" style="width: 150px;">
+                        <option value="PLACED" {% if order.status == 'PLACED' %}selected{% endif %}>Order Placed</option>
+                        <option value="IN_PROCESS" {% if order.status == 'IN_PROCESS' %}selected{% endif %}>Order in Process</option>
+                        <option value="DELIVERY_SOON" {% if order.status == 'DELIVERY_SOON' %}selected{% endif %}>Delivery Soon</option>
+                        <option value="OUT_FOR_DELIVERY" {% if order.status == 'OUT_FOR_DELIVERY' %}selected{% endif %}>Out for Delivery</option>
+                        <option value="DELIVERED" {% if order.status == 'DELIVERED' %}selected{% endif %}>Delivered</option>
+                        <option value="CANCELLED" {% if order.status == 'CANCELLED' %}selected{% endif %}>Cancelled</option>
+                      </select>
+                      <input name="note" class="form-control form-control-sm" placeholder="Note (optional)" style="width: 120px;">
+                      <button class="btn btn-warning btn-sm">
+                        <i class="fas fa-sync me-1"></i>Update
+                      </button>
+                    </form>
+                  </td>
+                  <td>
+                    <div class="btn-group">
+                      <a href="{% url 'core:my_order_detail' order.id %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-eye"></i>
+                      </a>
+                      <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#historyModal{{ order.id }}">
+                        <i class="fas fa-history"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- History Modals -->
+    {% for order in orders %}
+      <div class="modal fade" id="historyModal{{ order.id }}" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Order #{{ order.id }} History</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              {% for h in order.history.all %}
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <strong>{{ h.get_old_status_display }} → {{ h.get_new_status_display }}</strong>
+                    {% if h.note %}
+                      <br><small class="text-muted">{{ h.note }}</small>
+                    {% endif %}
+                  </div>
+                  <small class="text-muted">{{ h.created_at|date:"M d, H:i" }}</small>
+                </div>
+                <hr>
+              {% empty %}
+                <p class="text-muted">No status history available.</p>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
     {% endfor %}
-  </tbody>
-</table>
+
+  {% else %}
+    <div class="text-center py-5">
+      <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+      <h5>No Orders Found</h5>
+      <p class="text-muted">No orders match the selected criteria.</p>
+    </div>
+  {% endif %}
+</div>
+
+<style>
+.badge-status-placed { background-color: #17a2b8; }
+.badge-status-in_process { background-color: #ffc107; color: #000; }
+.badge-status-delivery_soon { background-color: #fd7e14; }
+.badge-status-out_for_delivery { background-color: #6f42c1; }
+.badge-status-delivered { background-color: #28a745; }
+.badge-status-cancelled { background-color: #dc3545; }
+
+.table th {
+  border-top: none;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(240, 200, 8, 0.1);
+}
+</style>
 {% endblock %}

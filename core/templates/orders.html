@@ -1,19 +1,154 @@
 {% extends "base.html" %}
-{% block title %}My Orders{% endblock %}
+{% block title %}My Orders - Premium Jewel Pack{% endblock %}
+
 {% block content %}
-<h3>My Orders</h3>
-{% if orders %}
-  <div class="list-group">
-    {% for o in orders %}
-      <a class="list-group-item list-group-item-action" href="{% url 'core:my_order_detail' o.id %}">
-        <div class="d-flex justify-content-between">
-          <div>#{{ o.id }} — {{ o.full_name }}</div>
-          <div>₹ {{ o.total }} — <span class="badge bg-dark">{{ o.get_status_display }}</span></div>
-        </div>
-      </a>
-    {% endfor %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>My Orders</h3>
+    <small class="text-muted">Showing orders from last 1 month by default</small>
   </div>
-{% else %}
-  <p>No orders yet.</p>
-{% endif %}
+  
+  <!-- Date Filter -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <form method="get" class="row g-3 align-items-center">
+        <div class="col-md-3">
+          <label for="start_date" class="form-label">From Date</label>
+          <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+        </div>
+        <div class="col-md-3">
+          <label for="end_date" class="form-label">To Date</label>
+          <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+        </div>
+        <div class="col-md-3">
+          <label>&nbsp;</label>
+          <div>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-filter me-2"></i>Filter Orders
+            </button>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <label>&nbsp;</label>
+          <div>
+            <a href="{% url 'core:my_orders' %}" class="btn btn-outline-secondary">
+              <i class="fas fa-refresh me-2"></i>Reset
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% if orders %}
+    <div class="row">
+      {% for order in orders %}
+        <div class="col-lg-6 mb-4">
+          <div class="card h-100 order-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h6 class="mb-0">Order #{{ order.id }}</h6>
+              <span class="badge badge-status-{{ order.status|lower }}">{{ order.get_status_display }}</span>
+            </div>
+            <div class="card-body">
+              <div class="row mb-2">
+                <div class="col-6">
+                  <small class="text-muted">Date:</small><br>
+                  <strong>{{ order.created_at|date:"M d, Y" }}</strong>
+                </div>
+                <div class="col-6">
+                  <small class="text-muted">Total:</small><br>
+                  <strong>₹{{ order.total }}</strong>
+                </div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-12">
+                  <small class="text-muted">Items:</small><br>
+                  {% for item in order.items.all %}
+                    <small>{{ item.product.name }} ({{ item.quantity }})</small>
+                    {% if not forloop.last %}, {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+              
+              <!-- Progress Bar -->
+              {% if order.tracking %}
+                <div class="mt-3">
+                  <small class="text-muted">Progress:</small>
+                  <div class="progress mt-1" style="height: 6px;">
+                    <div class="progress-bar bg-warning" style="width: {{ order.tracking.get_progress_percentage }}%"></div>
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+            <div class="card-footer">
+              <a href="{% url 'core:my_order_detail' order.id %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-eye me-2"></i>View Details & Track
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    
+    <!-- Pagination if needed -->
+    {% if orders.has_other_pages %}
+      <nav aria-label="Orders pagination">
+        <ul class="pagination justify-content-center">
+          {% if orders.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ orders.previous_page_number }}">Previous</a>
+            </li>
+          {% endif %}
+          
+          {% for page_num in orders.paginator.page_range %}
+            {% if page_num == orders.number %}
+              <li class="page-item active">
+                <span class="page-link">{{ page_num }}</span>
+              </li>
+            {% else %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+          
+          {% if orders.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ orders.next_page_number }}">Next</a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endif %}
+    
+  {% else %}
+    <div class="text-center py-5">
+      <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+      <h5>No Orders Found</h5>
+      <p class="text-muted">You haven't placed any orders in the selected date range.</p>
+      <a href="{% url 'core:product_list' %}" class="btn btn-primary">
+        <i class="fas fa-shopping-cart me-2"></i>Start Shopping
+      </a>
+    </div>
+  {% endif %}
+</div>
+
+<style>
+.badge-status-placed { background-color: #17a2b8; }
+.badge-status-in_process { background-color: #ffc107; color: #000; }
+.badge-status-delivery_soon { background-color: #fd7e14; }
+.badge-status-out_for_delivery { background-color: #6f42c1; }
+.badge-status-delivered { background-color: #28a745; }
+.badge-status-cancelled { background-color: #dc3545; }
+
+.order-card {
+  border: 1px solid #e9ecef;
+  transition: transform 0.2s ease-in-out;
+}
+
+.order-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+</style>
 {% endblock %}

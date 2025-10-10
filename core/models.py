@@ -127,10 +127,10 @@ class CartItem(models.Model):
 # Orders & status history
 # -------------------------
 ORDER_STATUS = [
-    ("PLACED", "Placed"),
-    ("CONFIRMED", "Confirmed"),
-    ("PACKED", "Packed"),
-    ("SHIPPED", "Shipped"),
+    ("PLACED", "Order Placed"),
+    ("IN_PROCESS", "Order in Process"),
+    ("DELIVERY_SOON", "Delivery Soon"),
+    ("OUT_FOR_DELIVERY", "Out for Delivery"),
     ("DELIVERED", "Delivered"),
     ("CANCELLED", "Cancelled"),
 ]
@@ -183,9 +183,87 @@ class OrderStatusHistory(models.Model):
     new_status = models.CharField(max_length=20, choices=ORDER_STATUS)
     note = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return f"Order #{self.order_id}: {self.old_status} → {self.new_status}"
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Order Status History"
+        verbose_name_plural = "Order Status Histories"
+
+
+class OrderTracking(models.Model):
+    """Detailed order tracking information"""
+    order = models.OneToOneField(Order, related_name="tracking", on_delete=models.CASCADE)
+    
+    # Tracking timestamps for each stage
+    placed_at = models.DateTimeField(null=True, blank=True)
+    in_process_at = models.DateTimeField(null=True, blank=True)
+    delivery_soon_at = models.DateTimeField(null=True, blank=True)
+    out_for_delivery_at = models.DateTimeField(null=True, blank=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+    
+    # Additional tracking details
+    estimated_delivery = models.DateTimeField(null=True, blank=True)
+    tracking_number = models.CharField(max_length=100, blank=True)
+    courier_service = models.CharField(max_length=100, blank=True)
+    delivery_address = models.TextField(blank=True)
+    
+    # Current status details
+    current_location = models.CharField(max_length=200, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
+    notes = models.TextField(blank=True)
+    
+    def __str__(self):
+        return f"Tracking for Order #{self.order.id}"
+    
+    def get_current_stage_timestamp(self):
+        """Get timestamp for current order status"""
+        status_mapping = {
+            'PLACED': self.placed_at,
+            'IN_PROCESS': self.in_process_at,
+            'DELIVERY_SOON': self.delivery_soon_at,
+            'OUT_FOR_DELIVERY': self.out_for_delivery_at,
+            'DELIVERED': self.delivered_at,
+            'CANCELLED': self.cancelled_at,
+        }
+        return status_mapping.get(self.order.status)
+    
+    def get_progress_percentage(self):
+        """Calculate order progress percentage"""
+        status_progress = {
+            'PLACED': 20,
+            'IN_PROCESS': 40,
+            'DELIVERY_SOON': 60,
+            'OUT_FOR_DELIVERY': 80,
+            'DELIVERED': 100,
+            'CANCELLED': 0,
+        }
+        return status_progress.get(self.order.status, 0)
+    
+    def get_completed_stages(self):
+        """Get list of completed stages with timestamps"""
+        stages = []
+        if self.placed_at:
+            stages.append(('PLACED', 'Order Placed', self.placed_at))
+        if self.in_process_at:
+            stages.append(('IN_PROCESS', 'Order in Process', self.in_process_at))
+        if self.delivery_soon_at:
+            stages.append(('DELIVERY_SOON', 'Delivery Soon', self.delivery_soon_at))
+        if self.out_for_delivery_at:
+            stages.append(('OUT_FOR_DELIVERY', 'Out for Delivery', self.out_for_delivery_at))
+        if self.delivered_at:
+            stages.append(('DELIVERED', 'Delivered', self.delivered_at))
+        if self.cancelled_at:
+            stages.append(('CANCELLED', 'Cancelled', self.cancelled_at))
+        return stages
+
+    class Meta:
+        verbose_name = "Order Tracking"
+        verbose_name_plural = "Order Tracking"
 
 
 # -------------------------

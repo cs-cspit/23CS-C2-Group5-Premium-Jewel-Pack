@@ -1,39 +1,257 @@
 {% extends "base.html" %}
-{% block title %}Order #{{ order.id }}{% endblock %}
+{% block title %}Order #{{ order.id }} - Premium Jewel Pack{% endblock %}
+
 {% block content %}
-<h3>Order #{{ order.id }}</h3>
-<p>Status: <strong>{{ order.get_status_display }}</strong></p>
-<div class="row">
-  <div class="col-md-8">
-    <table class="table">
-      <thead><tr><th>Product</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr></thead>
-      <tbody>
-        {% for it in order.items.all %}
-          <tr><td>{{ it.product.name }}</td><td>{{ it.quantity }}</td><td>₹{{ it.price }}</td><td>₹{{ it.subtotal }}</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  <div class="col-md-4">
-    <div class="card card-body">
-      <div class="d-flex justify-content-between"><span>Total</span><strong>₹ {{ order.total }}</strong></div>
-      <hr>
-      <h6>Tracking</h6>
-      {% if order.tracking_code %}
-        <p>Tracking Code: <strong>{{ order.tracking_code }}</strong></p>
-      {% else %}
-        <p>Tracking will appear when shipped.</p>
-      {% endif %}
-      <hr>
-      <h6>History</h6>
-      <ul class="list-unstyled">
-        {% for h in order.history.all %}
-          <li>{{ h.created_at|date:"d M Y H:i" }} — {{ h.old_status }} → {{ h.new_status }} {% if h.note %} ({{ h.note }}){% endif %}</li>
-        {% empty %}
-          <li>No updates yet.</li>
-        {% endfor %}
-      </ul>
+<div class="container py-4">
+  <div class="row">
+    <div class="col-lg-8">
+      <!-- Order Info -->
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Order #{{ order.id }}</h5>
+          <span class="badge badge-status-{{ order.status|lower }}">{{ order.get_status_display }}</span>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <strong>Order Date:</strong> {{ order.created_at|date:"F d, Y H:i" }}
+            </div>
+            <div class="col-md-6">
+              <strong>Customer:</strong> {{ order.full_name }}
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <strong>Email:</strong> {{ order.email }}
+            </div>
+            <div class="col-md-6">
+              <strong>Phone:</strong> {{ order.phone }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Items -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h6 class="mb-0">Order Items</h6>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead class="table-light">
+                <tr>
+                  <th>Product</th>
+                  <th>Quantity</th>
+                  <th>Price</th>
+                  <th>Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in order.items.all %}
+                  <tr>
+                    <td>{{ item.product.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>₹{{ item.price }}</td>
+                    <td>₹{{ item.subtotal }}</td>
+                  </tr>
+                {% endfor %}
+                <tr class="table-warning">
+                  <td colspan="3"><strong>Total</strong></td>
+                  <td><strong>₹{{ order.total }}</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <!-- Order Tracking -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h6 class="mb-0">
+            <i class="fas fa-truck me-2"></i>Order Tracking
+          </h6>
+        </div>
+        <div class="card-body">
+          {% if tracking %}
+            <!-- Progress Bar -->
+            <div class="progress mb-3" style="height: 8px;">
+              <div class="progress-bar bg-warning" style="width: {{ tracking.get_progress_percentage }}%"></div>
+            </div>
+            
+            <!-- Tracking Stages -->
+            <div class="tracking-timeline">
+              {% for stage_code, stage_name, timestamp in tracking.get_completed_stages %}
+                <div class="timeline-item completed">
+                  <div class="timeline-icon">
+                    <i class="fas fa-check-circle text-success"></i>
+                  </div>
+                  <div class="timeline-content">
+                    <h6 class="mb-1">{{ stage_name }}</h6>
+                    <small class="text-muted">{{ timestamp|date:"M d, Y H:i" }}</small>
+                  </div>
+                </div>
+              {% endfor %}
+              
+              <!-- Remaining stages -->
+              {% if order.status != 'DELIVERED' and order.status != 'CANCELLED' %}
+                {% if not tracking.in_process_at and order.status == 'PLACED' %}
+                  <div class="timeline-item pending">
+                    <div class="timeline-icon">
+                      <i class="fas fa-clock text-muted"></i>
+                    </div>
+                    <div class="timeline-content">
+                      <h6 class="mb-1 text-muted">Order in Process</h6>
+                      <small class="text-muted">Pending</small>
+                    </div>
+                  </div>
+                {% endif %}
+                
+                {% if not tracking.delivery_soon_at and order.status != 'DELIVERED' %}
+                  <div class="timeline-item pending">
+                    <div class="timeline-icon">
+                      <i class="fas fa-clock text-muted"></i>
+                    </div>
+                    <div class="timeline-content">
+                      <h6 class="mb-1 text-muted">Delivery Soon</h6>
+                      <small class="text-muted">Pending</small>
+                    </div>
+                  </div>
+                {% endif %}
+                
+                {% if not tracking.out_for_delivery_at and order.status != 'DELIVERED' %}
+                  <div class="timeline-item pending">
+                    <div class="timeline-icon">
+                      <i class="fas fa-clock text-muted"></i>
+                    </div>
+                    <div class="timeline-content">
+                      <h6 class="mb-1 text-muted">Out for Delivery</h6>
+                      <small class="text-muted">Pending</small>
+                    </div>
+                  </div>
+                {% endif %}
+                
+                {% if not tracking.delivered_at %}
+                  <div class="timeline-item pending">
+                    <div class="timeline-icon">
+                      <i class="fas fa-clock text-muted"></i>
+                    </div>
+                    <div class="timeline-content">
+                      <h6 class="mb-1 text-muted">Delivered</h6>
+                      <small class="text-muted">Pending</small>
+                    </div>
+                  </div>
+                {% endif %}
+              {% endif %}
+            </div>
+            
+            <!-- Additional Tracking Info -->
+            {% if tracking.tracking_number %}
+              <div class="mt-3 p-2 bg-light rounded">
+                <small><strong>Tracking Number:</strong> {{ tracking.tracking_number }}</small>
+              </div>
+            {% endif %}
+            
+            {% if tracking.estimated_delivery %}
+              <div class="mt-2 p-2 bg-light rounded">
+                <small><strong>Estimated Delivery:</strong> {{ tracking.estimated_delivery|date:"M d, Y" }}</small>
+              </div>
+            {% endif %}
+            
+          {% else %}
+            <p class="text-muted">Tracking information will appear once your order is processed.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Status History -->
+      <div class="card">
+        <div class="card-header">
+          <h6 class="mb-0">
+            <i class="fas fa-history me-2"></i>Status History
+          </h6>
+        </div>
+        <div class="card-body">
+          {% if history %}
+            <div class="list-group list-group-flush">
+              {% for h in history %}
+                <div class="list-group-item border-0 px-0">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <h6 class="mb-1">{{ h.get_old_status_display }} → {{ h.get_new_status_display }}</h6>
+                      {% if h.note %}
+                        <p class="mb-1 small text-muted">{{ h.note }}</p>
+                      {% endif %}
+                    </div>
+                    <small class="text-muted">{{ h.created_at|date:"M d, H:i" }}</small>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-muted">No status updates yet.</p>
+          {% endif %}
+        </div>
+      </div>
     </div>
   </div>
 </div>
+
+<style>
+.badge-status-placed { background-color: #17a2b8; }
+.badge-status-in_process { background-color: #ffc107; color: #000; }
+.badge-status-delivery_soon { background-color: #fd7e14; }
+.badge-status-out_for_delivery { background-color: #6f42c1; }
+.badge-status-delivered { background-color: #28a745; }
+.badge-status-cancelled { background-color: #dc3545; }
+
+.tracking-timeline {
+  position: relative;
+}
+
+.timeline-item {
+  display: flex;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: 12px;
+  top: 30px;
+  bottom: -20px;
+  width: 2px;
+  background-color: #e9ecef;
+}
+
+.timeline-item:last-child::before {
+  display: none;
+}
+
+.timeline-item.completed::before {
+  background-color: #28a745;
+}
+
+.timeline-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.timeline-content {
+  flex: 1;
+}
+
+.timeline-item.completed .timeline-content h6 {
+  color: #28a745;
+}
+</style>
 {% endblock %}
