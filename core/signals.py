@@ -38,10 +38,17 @@ def create_user_profile(sender, instance, created, **kwargs):
 def create_order_tracking(sender, instance, created, **kwargs):
     """Create OrderTracking when Order is created"""
     if created:
+        # Build full address from Order model fields
+        address_parts = [instance.address_line1]
+        if instance.address_line2:
+            address_parts.append(instance.address_line2)
+        address_parts.extend([instance.city, instance.state, instance.postal_code])
+        full_address = ", ".join(address_parts)
+        
         tracking = OrderTracking.objects.create(
             order=instance,
             placed_at=timezone.now(),
-            delivery_address=f"{instance.address}, {instance.city}, {instance.state} {instance.postal_code}"
+            delivery_address=full_address
         )
 
 

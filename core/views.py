@@ -105,17 +105,8 @@ def product_list(request, slug=None):
     if q:
         qs = qs.filter(name__icontains=q)
 
-    sort = request.GET.get("sort", "new")
-    if sort == "az":
-        qs = qs.order_by("name")
-    elif sort == "za":
-        qs = qs.order_by("-name")
-    elif sort == "price_low":
-        qs = qs.order_by("price")
-    elif sort == "price_high":
-        qs = qs.order_by("-price")
-    else:
-        qs = qs.order_by("-created_at")
+    # Default ordering by creation date (newest first)
+    qs = qs.order_by("-created_at")
 
     paginator = Paginator(qs, 12)
     page = request.GET.get("page")
@@ -124,8 +115,7 @@ def product_list(request, slug=None):
     context = {
         "products": products, 
         "active_category": active_category, 
-        "query": q,
-        "sort": sort
+        "query": q
     }
     return render(request, "product_list.html", context)
 
