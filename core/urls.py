@@ -30,6 +30,10 @@ urlpatterns = [
     # User orders
     path("my-orders/", views.my_orders, name="my_orders"),
     path("my-orders/<int:order_id>/", views.my_order_detail, name="my_order_detail"),
+    
+    # User Profile
+    path("profile/", views.user_profile, name="user_profile"),
+    path("profile/edit/", views.edit_profile, name="edit_profile"),
 
     # Owner management (requires is_staff check inside view)
     path("owner/orders/", views.owner_orders, name="owner_orders"),

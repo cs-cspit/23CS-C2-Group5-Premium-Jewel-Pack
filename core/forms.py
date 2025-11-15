@@ -134,3 +134,69 @@ class AddressForm(forms.ModelForm):
         model = Address
         fields = ("full_name","phone","address_line1","address_line2","city","state","postal_code","country")
         widgets = {f: forms.TextInput(attrs={"class":"form-control"}) for f in fields}
+
+class UserProfileForm(forms.Form):
+    """Form for editing user profile information"""
+    full_name = forms.CharField(
+        max_length=100,
+        required=True,
+        label="Full Name",
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Enter your full name"})
+    )
+    username = forms.CharField(
+        max_length=150,
+        required=True,
+        label="Username",
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Enter username"})
+    )
+    email = forms.EmailField(
+        required=True,
+        label="Email Address",
+        widget=forms.EmailInput(attrs={"class": "form-control", "placeholder": "Enter email address"})
+    )
+    firm_name = forms.CharField(
+        max_length=100,
+        required=False,
+        label="Firm Name",
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Enter firm/company name"})
+    )
+    mobile_number = forms.CharField(
+        max_length=15,
+        required=False,
+        label="Mobile Number",
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Enter mobile number"})
+    )
+    address = forms.CharField(
+        required=False,
+        label="Address",
+        widget=forms.Textarea(attrs={"class": "form-control", "rows": 3, "placeholder": "Enter your address"})
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        
+        if self.user:
+            # Pre-populate form with current user data
+            self.fields['full_name'].initial = self.user.first_name or self.user.get_full_name()
+            self.fields['username'].initial = self.user.username
+            self.fields['email'].initial = self.user.email
+            
+            # Pre-populate profile data if exists
+            if hasattr(self.user, 'profile'):
+                profile = self.user.profile
+                self.fields['firm_name'].initial = profile.firm_name
+                self.fields['mobile_number'].initial = profile.mobile_number
+                self.fields['address'].initial = profile.address
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if self.user and User.objects.filter(username=username).exclude(pk=self.user.pk).exists():
+            raise forms.ValidationError("This username is already taken.")
+        return username
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if self.user and User.objects.filter(email=email).exclude(pk=self.user.pk).exists():
+            raise forms.ValidationError("This email is already registered.")
+        return email

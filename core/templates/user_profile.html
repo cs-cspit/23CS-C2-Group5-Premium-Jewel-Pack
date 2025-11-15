@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Profile — Premium Jewel Pack{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 style="color:var(--pjp-text-dark)">My Profile</h3>
+        <a href="{% url 'core:edit_profile' %}" class="btn btn-pjp">
+          <i class="fas fa-edit me-2"></i>Edit Profile
+        </a>
+      </div>
+
+      <!-- Profile Information Card -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-light">
+          <h5 class="mb-0" style="color:var(--pjp-text-dark)">
+            <i class="fas fa-user me-2"></i>Personal Information
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="fw-bold text-muted">Full Name:</label>
+              <p class="mb-0">{{ user.first_name|default:"Not provided" }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="fw-bold text-muted">Username:</label>
+              <p class="mb-0">{{ user.username }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="fw-bold text-muted">Email:</label>
+              <p class="mb-0">{{ user.email|default:"Not provided" }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="fw-bold text-muted">Member Since:</label>
+              <p class="mb-0">{{ user.date_joined|date:"M d, Y" }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Business Information Card -->
+      <div class="card shadow-sm mt-4">
+        <div class="card-header bg-light">
+          <h5 class="mb-0" style="color:var(--pjp-text-dark)">
+            <i class="fas fa-building me-2"></i>Business Information
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="fw-bold text-muted">Firm Name:</label>
+              <p class="mb-0">{{ profile.firm_name|default:"Not provided" }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="fw-bold text-muted">Mobile Number:</label>
+              <p class="mb-0">{{ profile.mobile_number|default:"Not provided" }}</p>
+            </div>
+            <div class="col-12 mb-3">
+              <label class="fw-bold text-muted">Address:</label>
+              <p class="mb-0">{{ profile.address|default:"Not provided"|linebreaks }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions Card -->
+      <div class="card shadow-sm mt-4">
+        <div class="card-header bg-light">
+          <h5 class="mb-0" style="color:var(--pjp-text-dark)">
+            <i class="fas fa-cogs me-2"></i>Quick Actions
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <a href="{% url 'core:my_orders' %}" class="btn btn-outline-primary w-100">
+                <i class="fas fa-box me-2"></i>My Orders
+              </a>
+            </div>
+            <div class="col-md-4 mb-3">
+              <a href="{% url 'core:product_list' %}" class="btn btn-outline-success w-100">
+                <i class="fas fa-shopping-bag me-2"></i>Shop Products
+              </a>
+            </div>
+            <div class="col-md-4 mb-3">
+              <a href="{% url 'core:cart_detail' %}" class="btn btn-outline-warning w-100">
+                <i class="fas fa-shopping-cart me-2"></i>View Cart
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.card {
+  border: 1px solid #e9ecef;
+  transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+}
+
+.card-header {
+  background-color: #f8f9fa !important;
+  border-bottom: 1px solid #dee2e6;
+}
+
+label {
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+p {
+  font-size: 1rem;
+  color: var(--pjp-text-dark);
+}
+</style>
+{% endblock %}
