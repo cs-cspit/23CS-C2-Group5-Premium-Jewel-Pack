@@ -1,2 +1,34 @@
-django 
-django-crispy-forms 
+# Core Django framework
+Django==5.2.5
+
+# Django REST Framework (for APIs)
+djangorestframework==3.16
+
+# Pillow (for image uploads)
+Pillow==11.3.0
+
+# psycopg2 (for PostgreSQL support)
+psycopg2-binary==2.9.10
+
+# django-cors-headers (frontend CORS support)
+django-cors-headers==4.7.0
+
+# django-crispy-forms (signup/login forms)
+django-crispy-forms==2.4
+crispy-bootstrap5
+
+# django-allauth (auth, social login)
+django-allauth==65.11.0
+
+# Gunicorn (production deployment)
+gunicorn==23.0.0
+
+# Whitenoise (static files support)
+whitenoise==6.9.0
+
+# Utility dependencies
+sqlparse==0.5.3
+asgiref==3.9.1
+tzdata==2025.2
+
+# python-dotenv==1.1.1
