@@ -5,20 +5,18 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.http import JsonResponse, HttpResponseForbidden, HttpResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.utils.text import slugify
 from django.conf import settings
 from django.utils import timezone
-from django.views.decorators.cache import never_cache
-from functools import wraps
 
 from .models import (
     Category, Product, Cart, CartItem,
-    Order, OrderItem, OrderStatusHistory, Address, OrderTracking, UserProfile
+    Order, OrderItem, OrderStatusHistory, Address, OrderTracking
 )
-from .forms import SignupForm, LoginForm, CheckoutForm, AddressForm, ProductForm, UserProfileForm
+from .forms import SignupForm, LoginForm, CheckoutForm, AddressForm, ProductForm
 
 # -----------------------
 # Helpers
@@ -26,31 +24,6 @@ from .forms import SignupForm, LoginForm, CheckoutForm, AddressForm, ProductForm
 IMAGES_ROOT = settings.BASE_DIR / "core" / "static" / "images"
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
 RESERVED_FOLDERS = {"css", "js", "__pycache__", ".DS_Store", "icons", "fonts", "svg"}
-
-def no_cache(view_func):
-    """
-    Decorator to add comprehensive no-cache headers to prevent browser caching of sensitive pages.
-    This prevents users from accessing logged-in content via browser back button after logout.
-    """
-    @wraps(view_func)
-    def wrapped_view(request, *args, **kwargs):
-        # Check if user is authenticated for protected views
-        if hasattr(view_func, '__name__') and not request.user.is_authenticated:
-            return redirect('core:login')
-        
-        response = view_func(request, *args, **kwargs)
-        
-        # Add comprehensive cache control headers
-        if hasattr(response, 'get') or hasattr(response, '__getitem__'):
-            response['Cache-Control'] = 'no-cache, no-store, must-revalidate, private, max-age=0'
-            response['Pragma'] = 'no-cache'
-            response['Expires'] = '0'
-            response['Last-Modified'] = '0'
-            response['ETag'] = ''
-            response['Vary'] = 'Cookie'
-            
-        return response
-    return wrapped_view
 
 def _ensure_cart(request):
     if request.user.is_authenticated:
@@ -132,17 +105,8 @@ def product_list(request, slug=None):
     if q:
         qs = qs.filter(name__icontains=q)
 
-    sort = request.GET.get("sort", "new")
-    if sort == "az":
-        qs = qs.order_by("name")
-    elif sort == "za":
-        qs = qs.order_by("-name")
-    elif sort == "price_low":
-        qs = qs.order_by("price")
-    elif sort == "price_high":
-        qs = qs.order_by("-price")
-    else:
-        qs = qs.order_by("-created_at")
+    # Default ordering by creation date (newest first)
+    qs = qs.order_by("-created_at")
 
     paginator = Paginator(qs, 12)
     page = request.GET.get("page")
@@ -151,8 +115,7 @@ def product_list(request, slug=None):
     context = {
         "products": products, 
         "active_category": active_category, 
-        "query": q,
-        "sort": sort
+        "query": q
     }
     return render(request, "product_list.html", context)
 
@@ -196,29 +159,9 @@ def signup_view(request):
     return render(request, "signup.html", {"form": form})
 
 def logout_view(request):
-    # Clear all session data
-    request.session.flush()
-    # Logout the user
     logout(request)
-    # Clear any cached authentication
-    if hasattr(request, '_cached_user'):
-        delattr(request, '_cached_user')
-    
-    messages.success(request, "You have been successfully logged out.")
-    response = redirect("core:home")
-    
-    # Add comprehensive cache control headers
-    response['Cache-Control'] = 'no-cache, no-store, must-revalidate, private, max-age=0'
-    response['Pragma'] = 'no-cache'
-    response['Expires'] = '0'
-    response['Last-Modified'] = '0'
-    response['ETag'] = ''
-    
-    # Additional security headers
-    response['X-Frame-Options'] = 'DENY'
-    response['X-Content-Type-Options'] = 'nosniff'
-    
-    return response
+    messages.success(request, "Logged out.")
+    return redirect("core:login")
 
 # -----------------------
 # Cart (AJAX & non-AJAX)
@@ -280,7 +223,6 @@ def cart_remove(request):
 # Checkout / Orders
 # -----------------------
 @login_required
-@no_cache
 @transaction.atomic
 def checkout(request):
     cart = _ensure_cart(request)
@@ -311,7 +253,6 @@ def checkout(request):
     return render(request, "checkout.html", {"cart": cart, "form": form})
 
 @login_required
-@no_cache
 def order_success(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     if order.user != request.user and not request.user.is_staff:
@@ -319,7 +260,6 @@ def order_success(request, order_id):
     return render(request, "order_success.html", {"order": order})
 
 @login_required
-@no_cache
 def my_orders(request):
     # Default to orders from last 1 month
     one_month_ago = timezone.now() - timedelta(days=30)
@@ -352,7 +292,6 @@ def my_orders(request):
     return render(request, "orders.html", context)
 
 @login_required
-@no_cache
 def my_order_detail(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     # Get tracking information
@@ -374,7 +313,6 @@ def _owner_check(user):
     return user.is_staff
 
 @user_passes_test(_owner_check)
-@no_cache
 def owner_orders(request):
     # Get filter parameters
     status_filter = request.GET.get('status', '')
@@ -417,7 +355,6 @@ def owner_orders(request):
     return render(request, "owner_orders.html", context)
 
 @user_passes_test(_owner_check)
-@no_cache
 def owner_update_order_status(request, order_id):
     if request.method != "POST":
         return HttpResponseForbidden("Invalid method")
@@ -456,13 +393,11 @@ def owner_update_order_status(request, order_id):
     return redirect("core:owner_orders")
 
 @user_passes_test(_owner_check)
-@no_cache
 def owner_product_list(request):
     products = Product.objects.all().order_by("-created_at")
     return render(request, "owner_product_list.html", {"products": products})
 
 @user_passes_test(_owner_check)
-@no_cache
 def owner_product_create(request):
     if request.method == "POST":
         form = ProductForm(request.POST, request.FILES)
@@ -475,7 +410,6 @@ def owner_product_create(request):
     return render(request, "owner_product_form.html", {"form": form})
 
 @user_passes_test(_owner_check)
-@no_cache
 def owner_product_update(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == "POST":
@@ -489,7 +423,6 @@ def owner_product_update(request, pk):
     return render(request, "owner_product_form.html", {"form": form})
 
 @user_passes_test(_owner_check)
-@no_cache
 def owner_product_delete(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == "POST":
@@ -506,64 +439,3 @@ def about(request):
 
 def contact(request):
     return render(request, "contact.html")
-
-# -----------------------
-# User Profile Management
-# -----------------------
-@login_required
-@no_cache
-def user_profile(request):
-    """Display user profile information"""
-    user = request.user
-    profile = None
-    
-    # Get or create user profile
-    try:
-        profile = user.profile
-    except UserProfile.DoesNotExist:
-        profile = UserProfile.objects.create(user=user)
-    
-    context = {
-        'user': user,
-        'profile': profile
-    }
-    return render(request, "user_profile.html", context)
-
-@login_required
-@no_cache
-def edit_profile(request):
-    """Edit user profile information"""
-    user = request.user
-    
-    # Get or create user profile
-    try:
-        profile = user.profile
-    except UserProfile.DoesNotExist:
-        profile = UserProfile.objects.create(user=user)
-    
-    if request.method == 'POST':
-        form = UserProfileForm(request.POST, user=user)
-        if form.is_valid():
-            # Update User model fields
-            user.first_name = form.cleaned_data['full_name']
-            user.username = form.cleaned_data['username']
-            user.email = form.cleaned_data['email']
-            user.save()
-            
-            # Update UserProfile fields
-            profile.firm_name = form.cleaned_data['firm_name']
-            profile.mobile_number = form.cleaned_data['mobile_number']
-            profile.address = form.cleaned_data['address']
-            profile.save()
-            
-            messages.success(request, 'Your profile has been updated successfully!')
-            return redirect('core:user_profile')
-    else:
-        form = UserProfileForm(user=user)
-    
-    context = {
-        'form': form,
-        'user': user,
-        'profile': profile
-    }
-    return render(request, "edit_profile.html", context)

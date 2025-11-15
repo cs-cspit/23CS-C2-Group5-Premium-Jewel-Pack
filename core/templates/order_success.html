@@ -4,11 +4,7 @@
 <div class="text-center">
   <h3>Thank you — your order is placed!</h3>
   <p>Order id: <strong>#{{ order.id }}</strong></p>
-  <div class="d-flex gap-3 justify-content-center mt-4">
-    <a href="{% url 'core:my_order_detail' order.id %}" class="btn btn-outline-primary">
-      <i class="fas fa-truck me-2"></i>Track Order
-    </a>
-    <a href="{% url 'core:home' %}" class="btn btn-pjp">Continue Shopping</a>
-  </div>
+  <p>We’ll email confirmation to <strong>{{ order.email }}</strong>.</p>
+  <a href="{% url 'core:home' %}" class="btn btn-pjp">Continue Shopping</a>
 </div>
 {% endblock %}

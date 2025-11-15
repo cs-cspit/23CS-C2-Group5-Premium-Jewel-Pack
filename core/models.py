@@ -51,9 +51,7 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def get_price(self):
-        if self.discount_price:
-            return max(self.price - self.discount_price, Decimal("0.00"))
-        return self.price
+        return self.discount_price if self.discount_price else self.price
 
     def save(self, *args, **kwargs):
         if not self.slug:
